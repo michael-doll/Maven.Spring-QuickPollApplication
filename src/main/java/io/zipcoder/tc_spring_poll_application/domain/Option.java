@@ -1,8 +1,7 @@
 package io.zipcoder.tc_spring_poll_application.domain;
 
-import org.springframework.data.annotation.Id;
-
 import javax.persistence.*;
+import javax.persistence.Id;
 
 @Entity
 public class Option {

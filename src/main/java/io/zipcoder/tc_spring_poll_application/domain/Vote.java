@@ -1,6 +1,5 @@
 package io.zipcoder.tc_spring_poll_application.domain;
 
-import org.springframework.data.annotation.Id;
 import javax.persistence.*;
 
 @Entity
