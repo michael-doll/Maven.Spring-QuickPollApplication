@@ -1,5 +1,7 @@
 package io.zipcoder.tc_spring_poll_application.controller;
 
+import com.sun.javaws.exceptions.InvalidArgumentException;
+import com.sun.tools.corba.se.idl.InvalidArgument;
 import io.zipcoder.tc_spring_poll_application.domain.Poll;
 import io.zipcoder.tc_spring_poll_application.exception.ResourceNotFoundException;
 import io.zipcoder.tc_spring_poll_application.repositories.PollRepository;
@@ -10,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.validation.Valid;
 import java.net.URI;
 
 @RestController
@@ -27,7 +30,7 @@ public class PollController {
     }
 
     @RequestMapping(value="/polls", method=RequestMethod.POST)
-    public ResponseEntity<?> createPoll(@RequestBody Poll poll) {
+    public ResponseEntity<?> createPoll(@Valid @RequestBody Poll poll) {
         poll = pollRepository.save(poll);
         URI newPollUri = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -40,24 +43,29 @@ public class PollController {
     }
 
     @RequestMapping(value="/polls/{pollId}", method=RequestMethod.GET)
-    public ResponseEntity<?> getPoll(@PathVariable Long pollId) throws ResourceNotFoundException{
+    public ResponseEntity<?> getPoll(@PathVariable Long pollId) {
+        verifyPoll(pollId);
         Poll p = pollRepository.findOne(pollId);
         return new ResponseEntity<> (p, HttpStatus.OK);
     }
 
-    @RequestMapping(value="/polls/{pollId}", method=RequestMethod.DELETE)
-    public ResponseEntity<?> deletePoll(@PathVariable Long pollId) throws ResourceNotFoundException {
-        pollRepository.delete(pollId);
+    @RequestMapping(value="/polls/{pollId}", method=RequestMethod.POST)
+    public ResponseEntity<?> updatePoll(@Valid @RequestBody Poll poll,@PathVariable Long pollId)  {
+        verifyPoll(pollId);
+        pollRepository.save(poll);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @RequestMapping(value="/polls/{pollId}", method=RequestMethod.DELETE)
-    public void verifyPoll(@PathVariable Long pollId){
-        try {
-            getPoll(pollId);
-        }catch (ResourceNotFoundException e){
-            throw new ResourceNotFoundException();
-        }
+    public ResponseEntity<?> deletePoll(@PathVariable Long pollId)  {
+        verifyPoll(pollId);
+        pollRepository.delete(pollId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+
+    public void verifyPoll(Long pollId){
+        if(!pollRepository.exists(pollId)){ throw new ResourceNotFoundException(); }
     }
 
 
